@@ -24,6 +24,8 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: haxelegide/learndjango
+          flavor: |
+            latest=auto
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
@@ -32,7 +34,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=sha,pattern={{ github.sha }}
+            type=sha
 
       # - name: Build an image from Dockerfile
       #   run: |
