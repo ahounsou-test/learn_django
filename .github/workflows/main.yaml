@@ -23,7 +23,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: haxelegide/learndjango'
+          images: haxelegide/learndjango
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
