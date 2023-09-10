@@ -84,8 +84,8 @@ jobs:
     steps:
       - name: Render Deploy
         run: |
-          curl -X POST https://api.render.com/v1/deploys \
-            -H "Authorization: Bearer ${{ secrets.RENDER_TOKEN }}" \
+          curl -X POST https://api.render.com/v1/service/{{secrets.RENDER_SERVICE_ID}}/deploys \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
             -d '{
               "branch": "main", # Change this to your main branch name,
                "environment": "development"
