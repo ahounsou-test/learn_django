@@ -85,19 +85,7 @@ jobs:
       - name: Render Deploy
         run: |
           curl -X POST https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            -d '{
-              "branch": "main", # Change this to your main branch name,
-               "environment": "development"
-              "dockerImages": [
-                {
-                  "imageName": "docker.io/haxelegide/learndjango:sha-${{ github.sha }}",
-                  "env": {
-                    "YOUR_ENV_VARIABLE": "value" # Add any environment variables you need
-                  }
-                }
-              ]
-            }'
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
         env:
           RENDER_TOKEN: ${{ secrets.RENDER_TOKEN }}
           working-directory: ./path/to/your/app
