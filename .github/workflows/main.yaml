@@ -77,3 +77,27 @@ jobs:
           output: 'dependency-results.sbom.json'
           image-ref: '.'
           github-pat: ${{ secrets.GITHUB_TOKEN }}
+  Deploy:
+    name: deploy
+    runs-on: ubuntu-20.04
+    needs: scan 
+    steps:
+      - name: Render Deploy
+        run: |
+          curl -X POST https://api.render.com/v1/deploys \
+            -H "Authorization: Bearer ${{ secrets.RENDER_TOKEN }}" \
+            -d '{
+              "branch": "main", # Change this to your main branch name,
+               "environment": "development"
+              "dockerImages": [
+                {
+                  "imageName": "docker.io/haxelegide/learndjango:sha-${{ github.sha }}",
+                  "env": {
+                    "YOUR_ENV_VARIABLE": "value" # Add any environment variables you need
+                  }
+                }
+              ]
+            }'
+        env:
+          RENDER_TOKEN: ${{ secrets.RENDER_TOKEN }}
+          working-directory: ./path/to/your/app
