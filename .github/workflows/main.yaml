@@ -93,6 +93,7 @@ jobs:
   Notify:
     name: Notify
     runs-on: ubuntu-20.04
+    needs: deploy
     steps:
       - name: Post to a Slack channel
         id: slack
