@@ -36,6 +36,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             type=sha,format=long
+            type=raw,value=latest,enable={{is_default_branch}}
 
       # - name: Build an image from Dockerfile
       #   run: |
@@ -55,6 +56,44 @@ jobs:
     needs: build
     steps:
       - name: Run Trivy vulnerability scanner
+        id: latest-sha
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'docker.io/haxelegide/learndjango:sha-${{ github.sha }}'
+          format:  'json'
+          output: ' trivy-results-image-latest.json'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Check for new Vulnerabilities
+        run: |
+          set -eo pipefail
+
+          summary="Trivy scan has found new vulnerabilities in haxelegide/learndjango:sha-${{ github.sha }} check https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+
+          vulnCount=$(jq '[ .Results[].Vulnerabilities ] | length' trivy-results-image-latest.json)
+          if [[ $vulnCount -eq 0 ]]; then
+            summary="Trivy Scan has not found any new Security Issues in haxelegide/learndjango:sha-${{ github.sha }}"
+          fi
+
+          echo "SUMMARY=$summary" >> "$GITHUB_ENV"
+  
+      - name: Post to a Slack channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          # Slack channel id, channel name, or user id to post message.
+          # See also: https://api.slack.com/methods/chat.postMessage#channels
+          # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
+          channel-id: 'C05RZ57723E'
+          # For posting a simple plain text message
+          slack-message: "${{ env.SUMMARY }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'docker.io/haxelegide/learndjango:sha-${{ github.sha }}'
@@ -64,6 +103,7 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         with:
@@ -77,6 +117,7 @@ jobs:
           output: 'dependency-results.sbom.json'
           image-ref: '.'
           github-pat: ${{ secrets.GITHUB_TOKEN }}
+          
   Deploy:
     name: deploy
     runs-on: ubuntu-20.04
@@ -88,7 +129,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
         env:
           RENDER_TOKEN: ${{ secrets.RENDER_TOKEN }}
-          working-directory: ./path/to/your/app
+          # working-directory: ./path/to/your/app
   
   Notify:
     name: Notify
