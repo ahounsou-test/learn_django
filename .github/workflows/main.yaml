@@ -73,7 +73,7 @@ jobs:
 
           summary="Trivy scan has found new vulnerabilities in haxelegide/learndjango:sha-${{ github.sha }} check https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
 
-          vulnCount=$(jq '[ .Results[].Vulnerabilities ] | length' trivy-results-image-latest.json)
+          vulnCount=$(jq '.Results[].Vulnerabilities  | length' trivy-results-image-latest.json)
           if [[ $vulnCount -eq 0 ]]; then
             summary="Trivy Scan has not found any new Security Issues in haxelegide/learndjango:sha-${{ github.sha }}"
           fi
